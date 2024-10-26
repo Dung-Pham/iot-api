@@ -1,32 +1,43 @@
-/**
- * Updated by trungquandev.com's author on August 17 2023
- * YouTube: https://youtube.com/@trungquandev
- * "A bit of fragrance clings to the hand that gives flowers!"
- */
-
 import express from 'express'
-import { mapOrder } from '~/utils/sorts.js'
+import bodyParser from 'body-parser'
+import viewEngine from './config/viewEngine'
+import initWebRouter from './route/web'
+import connectDB from './config/connectDB'
+require('dotenv').config()
+let cors = require('cors');
+let app = express()
+let port = process.env.PORT || 8080
 
-const app = express()
+app.use(cors());
+app.use(function (req, res, next) {
 
-const hostname = 'localhost'
-const port = 8017
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', process.env.URL_REACT);
 
-app.get('/', (req, res) => {
-  // Test Absolute import mapOrder
-  console.log(mapOrder(
-    [ { id: 'id-1', name: 'One' },
-      { id: 'id-2', name: 'Two' },
-      { id: 'id-3', name: 'Three' },
-      { id: 'id-4', name: 'Four' },
-      { id: 'id-5', name: 'Five' } ],
-    ['id-5', 'id-4', 'id-2', 'id-3', 'id-1'],
-    'id'
-  ))
-  res.end('<h1>Hello World!</h1><hr>')
-})
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-app.listen(port, hostname, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Hello Trung Quan Dev, I am running at ${ hostname }:${ port }/`)
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
+
+// app.use(bodyParser.json())
+// app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+viewEngine(app)
+initWebRouter(app)
+
+connectDB()
+
+app.listen(port, () => {
+    console.log('app running on port: ' + port)
 })
