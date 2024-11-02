@@ -3,8 +3,8 @@ import db from '../models/index'
 
 let getHomePage = async (req, res) => {
     try {
-        // let data = await db.User.findAll()
-        return res.render('homePage.ejs', {data: JSON.stringify({})})
+        // let data = await db.Airs.findAll()
+        return res.render('homePage.ejs', {data: "Hello from backend server!"})
     } catch (error) {
         console.log(error)  
     }

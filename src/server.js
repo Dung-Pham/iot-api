@@ -3,10 +3,14 @@ import bodyParser from 'body-parser'
 import viewEngine from './config/viewEngine'
 import initWebRouter from './route/web'
 import connectDB from './config/connectDB'
+import './config/connectBroker.js'; 
 require('dotenv').config()
+
+
 let cors = require('cors');
 let app = express()
 let port = process.env.PORT || 8080
+
 
 app.use(cors());
 app.use(function (req, res, next) {
@@ -39,5 +43,5 @@ initWebRouter(app)
 connectDB()
 
 app.listen(port, () => {
-    console.log('app running on port: ' + port)
+  console.log(`Welcome to my iot api app, server is running at: http://localhost:${port}`)
 })
