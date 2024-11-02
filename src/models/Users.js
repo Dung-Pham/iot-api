@@ -3,18 +3,18 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Airs extends Model {
+  class Users extends Model {
 
   };
-  Airs.init({
-    ppm: DataTypes.FLOAT,
+  Users.init({
+    userName: DataTypes.STRING,
+    email: DataTypes.STRING,
+    password: DataTypes.STRING,
     deviceId: DataTypes.STRING,
-    time: DataTypes.TIME, 
-    date: DataTypes.DATEONLY, 
   }, {
     sequelize,
-    modelName: 'Airs',
+    modelName: 'Users',
     timestamps: false,
   });
-  return Airs;
+  return Users;
 };

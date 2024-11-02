@@ -7,8 +7,9 @@ import {
 
 let handleGetAllData = async (req, res) => {
     let types = req.query.types
+    let deviceId = req.query.deviceId
 
-    let data = await getAllData(types)
+    let data = await getAllData(types, deviceId)
     console.log(data)
     return res.status(200).json({
         errCode: 0,
@@ -20,7 +21,9 @@ let handleGetAllData = async (req, res) => {
 let handleGetDataDay = async (req, res) => {
     let types = req.query.types
     let day = req.query.day
-    let data = await getAllDataDay(types, day)
+    let deviceId = req.query.deviceId
+    
+    let data = await getAllDataDay(types, day, deviceId)
     console.log(data)
     return res.status(200).json({
         errCode: 0,
@@ -53,10 +56,11 @@ let handleGetDataWeek = async (req, res) => {
     const year = date.getFullYear(); // Lấy năm
     const month = date.getMonth() + 1; // Lấy tháng (0-11), cần cộng 1
     const day = date.getDate(); // Lấy ngày (1-31)
-    
+
+    let deviceId = req.query.deviceId
     let days = getDayOfWeek(day, month, year)
     console.log('đây là DayOfWeek: ',days)
-    let data = await getAllDataWeek(types, days)
+    let data = await getAllDataWeek(types, days, deviceId)
     console.log(data)
     return res.status(200).json({
         errCode: 0,
@@ -70,7 +74,8 @@ let handleGetDataMonth = async (req, res) => {
     let types = req.query.types
     let month = req.query.month
     let year = req.query.year
-    let data = await getAllDataMonth(types, month, year)
+    let deviceId = req.query.deviceId
+    let data = await getAllDataMonth(types, month, year, deviceId)
     console.log(data)
     return res.status(200).json({
         errCode: 0,

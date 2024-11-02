@@ -2,6 +2,9 @@ import express from "express"
 import {
     handleGetAllData, handleGetDataDay, handleGetDataWeek, handleGetDataMonth
 } from "../controllers/controller"
+import {
+    handleLogin, handleControl
+} from "../controllers/userController"
 import{getHomePage} from "../controllers/homeControler"
 
 
@@ -18,6 +21,10 @@ let initWebRouter = (app) => {
     router.get('/api/get-data-month', handleGetDataMonth) // get data in 1 month
 
     //userController
+    router.post('/api/login', handleLogin)
+    // light, toggle
+    router.post('/api/control', handleControl)
+    
     return app.use('/', router)
 }
 

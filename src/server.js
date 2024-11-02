@@ -3,7 +3,8 @@ import bodyParser from 'body-parser'
 import viewEngine from './config/viewEngine'
 import initWebRouter from './route/web'
 import connectDB from './config/connectDB'
-import './config/connectBroker.js'; 
+import {userClients, connectUser} from './config/connectBroker'; 
+import { forEach } from 'lodash'
 require('dotenv').config()
 
 
@@ -45,3 +46,7 @@ connectDB()
 app.listen(port, () => {
   console.log(`Welcome to my iot api app, server is running at: http://localhost:${port}`)
 })
+
+//connect broker server (test with 2 devices)
+connectUser('dev001')
+connectUser('dev002')

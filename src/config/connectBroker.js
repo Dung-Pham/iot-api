@@ -3,65 +3,62 @@ import {
     handleUpdateDate
 } from '../controllers/controller'
 
-'../services/service'
+//list client tương ứng với device (deviceId)
+export const userClients = {};
 
-
-let mqttClient = mqtt.connect('mqtt://10.21.242.172');
-let mqttData = null;
-let data = null
-let type = null
-mqttClient.on('connect', () => {
-    console.log('Đã kết nối đến MQTT broker');
-
-    // subcribe topic Air
-    mqttClient.subscribe('SubData/air', (err) => {
-        if (err) {
-            console.error('Lỗi khi đăng ký topic:', err);
-        } else {
-            console.log('Đã đăng ký SubData/air thành công');
-        }
+// Function to connect a user to MQTT
+export const connectUser = (deviceId) => {
+    const client = mqtt.connect('mqtt://192.168.1.52');
+    let mqttData = null
+    let data = null
+    let type = null
+    client.on('connect', () => {
+        console.log(`${deviceId} connected to MQTT broker`);
+        client.subscribe(`${deviceId}/data/+`, (err) => {
+            if (err) {
+                console.error(`${deviceId} subscription error:`, err);
+            }
+        });
     });
 
-    // subcribe topic Light
-    mqttClient.subscribe('SubData/light', (err) => {
-        if (err) {
-            console.error('Lỗi khi đăng ký topic:', err);
-        } else {
-            console.log('Đã đăng ký SubData/light thành công');
+    client.on('message', (topic, message) => {
+        console.log(`${deviceId} received message on ${topic}: ${message.toString()}`);
+        const now = new Date();
+
+        const time = now.toLocaleTimeString(); // e.g., "10:45:30 AM"
+        const date = now.toLocaleDateString(); // e.g., "11/01/2024"
+
+        type = topic == `${deviceId}/data/air` ? "air" : topic == `${deviceId}/data/light` ? "light" : "rain"
+
+        mqttData = {
+            a: message.toString(),
+            deviceId: deviceId,
+            time: time,
+            date: date
         }
+        data = {
+            type: type,
+            mqttData: mqttData
+        }
+        handleUpdateDate(data)
+        console.log(data);
     });
 
-    // subcribe topic Rain
-    mqttClient.subscribe('SubData/rain', (err) => {
-        if (err) {
-            console.error('Lỗi khi đăng ký topic rain:', err);
-        } else {
-            console.log('Đã đăng ký SubData/rain thành công');
-        }
-    });
-});
-mqttClient.on('message', (topic, message) => {
-    const now = new Date();
+    userClients[deviceId] = client; // Store the client for later use
+}
 
-    const time = now.toLocaleTimeString(); // e.g., "10:45:30 AM"
-    const date = now.toLocaleDateString(); // e.g., "11/01/2024"
-
-    type = topic == "SubData/air" ? "air" : topic == "SubData/light" ? "light" : "rain"
-
-    console.log(`Dữ liệu nhận từ ${topic}: ${message.toString()}`);
-    mqttData = {
-        a: message.toString(),
-        time: time,
-        date: date
+export const publishToTopic = (deviceId, subTopic, message) => {
+    const client = userClients[deviceId];
+    if (client) {
+        const topic = `${deviceId}/${subTopic}`;
+        client.publish(topic, message, (err) => {
+            if (err) {
+                console.error(`Publish error for user ${deviceId} on topic ${topic}:`, err);
+            } else {
+                console.log(`Message published to ${topic} for user ${deviceId}: ${message}`);
+            }
+        });
+    } else {
+        console.error(`Client not found for user ${deviceId}. Please ensure the user is connected.`);
     }
-    data = {
-        type : type,
-        mqttData : mqttData
-    }
-    handleUpdateDate(data)
-    console.log(data);
-
-
-});
-
-export default mqttClient;
+}

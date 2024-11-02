@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   Lights.init({
     lux: DataTypes.FLOAT,
+    deviceId: DataTypes.STRING,
     time: DataTypes.TIME, 
     date: DataTypes.DATEONLY, 
   }, {

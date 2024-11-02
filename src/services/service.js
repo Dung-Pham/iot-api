@@ -6,7 +6,7 @@ const { Op, fn, col, where } = require('sequelize');
 let updateAirData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.a || !data.time || !data.date) {
+            if (!data.a || !data.time || !data.date || !data.deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -14,6 +14,7 @@ let updateAirData = (data) => {
             } else {
                 await db.Airs.create({
                     ppm: Number(data.a),
+                    deviceId: data.deviceId,
                     time: data.time,
                     date: data.date,
                 })
@@ -32,7 +33,7 @@ let updateAirData = (data) => {
 let updateLightData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.a || !data.time || !data.date) {
+            if (!data.a || !data.time || !data.date || !data.deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -40,6 +41,7 @@ let updateLightData = (data) => {
             } else {
                 await db.Lights.create({
                     lux: Number(data.a),
+                    deviceId: data.deviceId,
                     time: data.time,
                     date: data.date,
                 })
@@ -58,7 +60,7 @@ let updateLightData = (data) => {
 let updateRainData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.a || !data.time || !data.date) {
+            if (!data.a || !data.time || !data.date || !data.deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -66,6 +68,7 @@ let updateRainData = (data) => {
             } else {
                 await db.Rains.create({
                     status: Number(data.a),
+                    deviceId: data.deviceId,
                     time: data.time,
                     date: data.date,
                 })
@@ -81,18 +84,19 @@ let updateRainData = (data) => {
     })
 }
 // get all data for each type
-let getAllData = (types) => {
+let getAllData = (types, deviceId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let datas = null
-            if (!types) {
+            if (!types || !deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
                 })
             } else {
-                datas = await (types == "air" ? db.Airs.findAll() :
-                    types == "light" ? db.Lights.findAll() : db.Rains.findAll())
+                let model = types == "air" ? db.Airs :
+                    types == "light" ? db.Lights : db.Rains
+                datas = await model.findAll({ where: { deviceId: deviceId } });
             }
             resolve(datas)
         } catch (e) {
@@ -102,11 +106,11 @@ let getAllData = (types) => {
 }
 
 // get all data for each type in 1 day
-let getAllDataDay = (types, day) => {
+let getAllDataDay = (types, day, deviceId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let datas = null
-            if (!types || !day) {
+            if (!types || !day || !deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -115,7 +119,12 @@ let getAllDataDay = (types, day) => {
                 let model = types == "air" ? db.Airs :
                     types == "light" ? db.Lights : db.Rains
 
-                datas = await model.findAll({ where: { date: day } });
+                datas = await model.findAll({ 
+                    where: { 
+                        date: day, 
+                        deviceId: deviceId
+                    } 
+                });
             }
             resolve(datas)
         } catch (e) {
@@ -125,11 +134,11 @@ let getAllDataDay = (types, day) => {
 }
 
 // get all data for each type in 1 month
-let getAllDataMonth = (types, month, year) => {
+let getAllDataMonth = (types, month, year, deviceId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let datas = null
-            if (!types || !month || !year) {
+            if (!types || !month || !year || !deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -142,8 +151,9 @@ let getAllDataMonth = (types, month, year) => {
                     where: {
                         [Op.and]: [
                             where(fn('MONTH', col('date')), month),  // So sánh tháng
-                            where(fn('YEAR', col('date')), year)     // So sánh năm
-                        ]
+                            where(fn('YEAR', col('date')), year),     // So sánh năm
+                        ],
+                        deviceId : deviceId
                     }
                 });
             }
@@ -155,11 +165,11 @@ let getAllDataMonth = (types, month, year) => {
 }
 
 // get all data for each type in 1 week
-let getAllDataWeek = (types, days) => {
+let getAllDataWeek = (types, days, deviceId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let datas = null
-            if (!types || !days) {
+            if (!types || !days || !deviceId) {
                 resolve({
                     errCode: 1,
                     errMessage: `Missing input parameter!`
@@ -174,7 +184,8 @@ let getAllDataWeek = (types, days) => {
                     where: {
                         date: {
                             [Op.in]: listDays
-                        }
+                        },
+                        deviceId : deviceId
                     }
                 });
             }

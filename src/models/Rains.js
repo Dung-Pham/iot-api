@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   Rains.init({
     status: DataTypes.INTEGER,
+    deviceId: DataTypes.STRING,
     time: DataTypes.TIME, 
     date: DataTypes.DATEONLY, 
   }, {
