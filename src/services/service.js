@@ -119,14 +119,37 @@ let getAllDataDay = (types, day, deviceId) => {
                 let model = types == "air" ? db.Airs :
                     types == "light" ? db.Lights : db.Rains
 
-                datas = await model.findAll({ 
-                    where: { 
-                        date: day, 
+                datas = await model.findAll({
+                    where: {
+                        date: day,
                         deviceId: deviceId
-                    } 
+                    }
                 });
             }
-            resolve(datas)
+
+            let value = types == "air" ? "ppm" :
+            types == "light" ? "lux" : "status";
+
+            // Nhóm dữ liệu theo giờ dựa vào trường time
+            let groupedData = datas.reduce((acc, data) => {
+                let hour = data.time.split(':')[0]; 
+                if (!acc[hour]) acc[hour] = [];
+                acc[hour].push(data[value]); 
+                return acc;
+            }, {});
+
+            let averagedData = Object.keys(groupedData).map(hour => {
+                let values = groupedData[hour];
+                let average = values.reduce((sum, value) => sum + value, 0) / values.length;
+                average = Math.ceil(average * 100) / 100; 
+                return {
+                    hour, 
+                    average: average
+                };
+            });
+            resolve(
+                averagedData
+            )
         } catch (e) {
             reject(e)
         }
@@ -153,11 +176,18 @@ let getAllDataMonth = (types, month, year, deviceId) => {
                             where(fn('MONTH', col('date')), month),  // So sánh tháng
                             where(fn('YEAR', col('date')), year),     // So sánh năm
                         ],
-                        deviceId : deviceId
+                        deviceId: deviceId
                     }
                 });
             }
-            resolve(datas)
+
+            let value = types == "air" ? "ppm" :
+                types == "light" ? "lux" : "status";
+
+            let averagedData = averageDataInDay(datas, value)
+            resolve({
+                averagedData
+            })
         } catch (e) {
             reject(e)
         }
@@ -185,15 +215,45 @@ let getAllDataWeek = (types, days, deviceId) => {
                         date: {
                             [Op.in]: listDays
                         },
-                        deviceId : deviceId
+                        deviceId: deviceId
                     }
                 });
             }
-            resolve(datas)
+
+            let value = types == "air" ? "ppm" :
+                types == "light" ? "lux" : "status";
+
+            let averagedData = averageDataInDay(datas, value)
+            resolve({
+                averagedData
+            })
         } catch (e) {
             reject(e)
         }
     })
+}
+
+let averageDataInDay = (datas, value) => {
+    // Nhóm dữ liệu theo ngày
+    let groupedData = datas.reduce((acc, data) => {
+        let date = data.date;
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(data[value]);
+        return acc;
+
+    }, {});
+
+    // Tính trung bình cho từng ngày
+    let averagedData = Object.keys(groupedData).map(date => {
+        let values = groupedData[date];
+        let average = values.reduce((sum, value) => sum + value, 0) / values.length;
+        average = Math.ceil(average * 100) / 100
+        return {
+            date: date,
+            average: average
+        };
+    });
+    return averagedData;
 }
 module.exports = {
     getAllData, updateRainData, updateLightData, updateAirData,

@@ -40,20 +40,21 @@ body :
 ```
 
 #### Lấy data theo ngày từ database
-
+trả về dữ liệu trung bình theo mỗi giờ trong 1 ngày
 ```http
-http://localhost:8080/api/get-data-day?types=rain&day=2024-11-01
+http://localhost:8080/api/get-data-day?types=air&day=2024-11-01&deviceId=dev001
 ```
 #### Lấy data theo tuần từ database
-
+trả về dữ liệu trung bình theo mỗi ngày trong 1 tuần
 ```http
-http://localhost:8080/api/get-data-week?types=rain&date=2024-11-01
+http://localhost:8080/api/get-data-week?types=air&date=2024-11-01&deviceId=dev001
 ```
 
 #### Lấy data theo tháng từ database
+trả về dữ liệu trung bình theo mỗi ngày trong 1 tháng
 
 ```http
-http://localhost:8080/api/get-data-month?types=rain&month=10&year=2024
+http://localhost:8080/api/get-data-month?year=2024&deviceId=dev001&types=air&month=11
 ```
 
 #### Điều khiển đèn/ mái che
